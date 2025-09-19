@@ -1,1 +1,49 @@
-# terraform-todoapp-infra
+name: "Dev Terraform Workflow"
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main      
+
+permissions:
+  id-token: write
+  contents: read
+  
+jobs: 
+  terraform-init-plan:
+    runs-on: runkro   # change to ubuntu-latest if not using self-hosted
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v5.0.0
+        with:
+          fetch-depth: 0
+    
+      - name: Azure Login
+        uses: azure/login@v2.3.0
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+            
+      - name: Terraform fmt
+        run: terraform fmt -check
+        continue-on-error: true
+        working-directory: environments/dev
+        
+      - name: Terraform Init
+        run: terraform init  
+        working-directory: environments/dev
+        
+      - name: Terraform Validate
+        run: terraform validate -no-color
+        working-directory: environments/dev
+                
+      - name: Terraform Plan
+        run: terraform plan -out=tfplan 
+        working-directory: environments/dev
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve tfplan
+        working-directory: environments/dev
