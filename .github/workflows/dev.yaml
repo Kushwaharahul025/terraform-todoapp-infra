@@ -14,7 +14,7 @@ permissions:
   
 jobs: 
   terraform-init-plan:
-    runs-on: onprem   # change to ubuntu-latest if not using self-hostedh
+    runs-on: onprem   # change to ubuntu-latest if not using self-hosted
     steps: 
       - name: Checkout
         uses: actions/checkout@v5.0.0
@@ -29,21 +29,21 @@ jobs:
       - name: Terraform fmt
         run: terraform fmt -check
         continue-on-error: true
-        working-directory: dev
+        working-directory: environments/dev
         
       - name: Terraform Init
         run: terraform init  
-        working-directory: dev
+        working-directory: environments/dev
         
       - name: Terraform Validate
         run: terraform validate -no-color
-        working-directory: dev
+        working-directory: environments/dev
                 
       - name: Terraform Plan
         run: terraform plan -out=tfplan 
-        working-directory: dev
+        working-directory: environments/dev
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
         run: terraform apply -auto-approve tfplan
-        working-directory: dev
+        working-directory: environments/dev
